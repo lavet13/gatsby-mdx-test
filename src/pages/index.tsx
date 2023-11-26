@@ -1,90 +1,99 @@
-import * as React from "react";
-import type { HeadFC, PageProps } from "gatsby";
+import * as React from 'react';
 import {
   Box,
-  Center,
+  Grid,
   Heading,
-  Highlight,
-  List,
-  ListItem,
+  LinkBox,
+  LinkOverlay,
   Text,
-  useColorMode,
-  Code,
-  Button,
-  calc,
-  CodeProps,
-  Link as ChakraLink,
-  Divider,
-  Flex,
-} from "@chakra-ui/react";
+} from '@chakra-ui/react';
 
-const $lineHeight = "1.4375rem";
+import { graphql, Link as GatsbyLink } from 'gatsby';
+import type { HeadFC, PageProps } from 'gatsby';
+import { GatsbyImage, IGatsbyImageData, getImage } from 'gatsby-plugin-image';
 
-const PurpleCode = (props: CodeProps) => (
-  <Code colorScheme="purple" {...props} />
-);
+import Dump from '../components/dump';
 
-const IndexPage: React.FC<PageProps> = () => {
-  const { toggleColorMode } = useColorMode();
+const IndexPage: React.FC<PageProps<Queries.SiteIndexQueryQuery>> = ({
+  data,
+}) => {
   return (
-    <Box as="main">
-      <Center height="100vh" textAlign="center">
-        <Flex gap={$lineHeight} flexDir="column">
-          <Heading
-            as="h1"
-            size="4xl"
-            maxW="16ch"
-            lineHeight={calc($lineHeight).multiply(4).toString()}
-          >
-            <Highlight
-              query="With Speed"
-              styles={{ color: "purple.600", _dark: { color: "purple.400" } }}
+    <Box as='main'>
+      {/* <Dump data={data} /> */}
+
+      <Grid
+        gridTemplateColumns={'repeat(auto-fit, minmax(14rem, 1fr))'}
+        gridAutoRows={'minmax(15rem, 1fr)'}
+        gap={3}
+      >
+        {data.allMdx.nodes.map(node => {
+          const heroImage = getImage(
+            node.frontmatter?.cover?.childImageSharp?.gatsbyImageData!
+          );
+
+          return (
+            <LinkBox
+              as='article'
+              key={node.id}
+              maxW={'sm'}
+              p={5}
+              rounded='md'
+              borderWidth='1px'
             >
-              Get Started Using Gatsby With Speed
-            </Highlight>
-          </Heading>
-          <Text fontSize="2xl" mb={$lineHeight}>
-            Thank you for using the Gatsby Starter for{" "}
-            <PurpleCode fontSize="initial">Chakra UI</PurpleCode>!
-          </Text>
-          <List textAlign="start" spacing={4}>
-            <ListItem>
-              ⚡Create accessible Gatsby apps with speed using Chakra UI
-            </ListItem>
-            <ListItem>
-              ⚡Generate types from your custom component with the Chakra CLI
-              for IDE autocompletion
-            </ListItem>
-          </List>
-          <Text>
-            To generate the theming token types, run{" "}
-            <PurpleCode>npm run theme</PurpleCode> or{" "}
-            <PurpleCode>npm run theme:watch</PurpleCode>
-          </Text>
-          <Text>
-            Head over to{" "}
-            <ChakraLink
-              href="https://chakra-ui.com"
-              color="blue.500"
-              fontWeight="bold"
-            >
-              ChakraUI.com
-            </ChakraLink>{" "}
-            to get started using the components and creating your theme!
-          </Text>
-          <Divider />
-          <Button
-            onClick={toggleColorMode}
-            colorScheme="blue"
-            alignSelf="center"
-          >
-            Toggle Color Mode
-          </Button>
-        </Flex>
-      </Center>
+              <Heading as='h1'>
+                <LinkOverlay as={GatsbyLink} to={node.fields?.slug as string}>
+                  {node.frontmatter?.title}
+                </LinkOverlay>
+              </Heading>
+              <Box as={GatsbyLink} to={node.fields?.slug as string}>
+                {heroImage && (
+                  <GatsbyImage
+                    image={heroImage}
+                    style={{ borderRadius: '0.375rem' }}
+                    alt='Hero Image'
+                  />
+                )}
+              </Box>
+              <Text>{node.frontmatter?.date}</Text>
+              <Text fontSize={'0.8rem'} fontWeight={900}>
+                {node.excerpt}
+              </Text>
+            </LinkBox>
+          );
+        })}
+      </Grid>
     </Box>
   );
 };
+
+export const query = graphql`
+  query SiteIndexQuery {
+    allMdx(
+      sort: { frontmatter: { date: DESC } }
+      filter: { frontmatter: { published: { eq: true } } }
+    ) {
+      nodes {
+        id
+        excerpt(pruneLength: 65)
+
+        frontmatter {
+          title
+          date(formatString: "YYYY MMMM Do")
+          cover {
+            publicURL
+            childImageSharp {
+              gatsbyImageData(width: 250)
+            }
+          }
+        }
+
+        fields {
+          slug
+        }
+      }
+    }
+  }
+`;
 
 export default IndexPage;
 

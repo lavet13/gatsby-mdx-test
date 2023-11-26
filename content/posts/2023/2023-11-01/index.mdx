@@ -1,0 +1,40 @@
+---
+title: Hello World - from mdx!
+date: 2023-11-01
+published: true
+cover: pic.jpg
+---
+
+# h1 Heading
+
+My first post!!
+
+## Yes! Some code!
+
+Here is the `Dump` component!
+
+```tsx react-live
+import React from 'react';
+
+const Dump = props => (
+  <div
+    style={{
+      fontSize: 20,
+      border: '1px solid #efefef',
+      padding: 10,
+      background: 'white',
+    }}
+  >
+    {Object.entries(props).map(([key, val]) => (
+      <pre key={key}>
+        <strong style={{ color: 'white', background: 'red' }}>{key} 💩</strong>
+        {JSON.stringify(val, '', ' ')}
+      </pre>
+    ))}
+  </div>
+);
+
+export default Dump;
+```
+
+### h3 Heading
